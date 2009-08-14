@@ -109,7 +109,8 @@ module XGen
         #   present for a document to be included in the result set OR an
         #   instance of ObjectID to be used as the value for an _id query.
         #   if nil an empty spec, {}, will be used.
-        def find_one(spec_or_object_id=nil)
+        # :options :: options, as passed to Collection#find
+        def find_one(spec_or_object_id=nil, options={})
           spec = case spec_or_object_id
                  when nil
                    {}
@@ -120,7 +121,7 @@ module XGen
                  else
                    raise TypeError, "spec_or_object_id must be an instance of ObjectID or Hash, or nil"
                  end
-          find(spec, :limit => -1).next_object
+          find(spec, options.merge(:limit => -1)).next_object
         end
 
         # DEPRECATED - use find_one instead
@@ -128,10 +129,7 @@ module XGen
         # Find the first record that matches +selector+. See #find.
         def find_first(selector={}, options={})
           warn "Collection#find_first is deprecated and will be removed. Please use Collection#find_one instead."
-          h = options.dup
-          h[:limit] = 1
-          cursor = find(selector, h)
-          cursor.next_object    # don't need to explicitly close b/c of limit
+          find_one(selector, options)
         end
 
         # Save a document in this collection.
