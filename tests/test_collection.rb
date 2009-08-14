@@ -138,7 +138,6 @@ class TestCollection < Test::Unit::TestCase
     doc = {"hello" => "world"}
     @@test.save(doc)
     assert doc.include? :_id
-
   end
 end
 
