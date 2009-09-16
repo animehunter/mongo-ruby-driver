@@ -179,6 +179,11 @@ class TestCollection < Test::Unit::TestCase
     assert c.closed?
   end
 
+  def test_saving_dates_pre_epoch
+    @@test.save({'date' => Time.utc(1600)})
+    assert_in_delta Time.utc(1600), @@test.find_one()["date"], 0.001
+  end
+
   def test_save_symbol_find_string
     @@test.save(:foo => :mike)
 
