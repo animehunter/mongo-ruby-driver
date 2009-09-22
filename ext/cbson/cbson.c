@@ -63,25 +63,18 @@ static VALUE OrderedHash;
 #define EXTENDED RE_OPTION_EXTENDED
 #endif
 
-/* TODO we ought to check that the malloc or asprintf was successful
+/* TODO we ought to check that the snprintf was successful
  * and raise an exception if not. */
 #ifdef _MSC_VER
-#define INT2STRING(buffer, i)                   \
-    {                                           \
-        int vslength = _scprintf("%d", i) + 1;  \
-        *buffer = malloc(vslength);             \
-        _snprintf(*buffer, vslength, "%d", i);  \
-    }
-#elif defined(__MINGW32__)
-#define INT2STRING(buffer, i)                   \
-    {                                           \
-        int vslength = log10(i) + 2;  \
-        *buffer = malloc(vslength);             \
-        _snprintf(*buffer, vslength, "%d", i);  \
+#define INT2STRING(buffer, len, i)        \
+    {                                     \
+        _snprintf(buffer, len, "%d", i);  \
     }
 #else
-#define INT2STRING(buffer, i) asprintf(buffer, "%d", i);
+#define INT2STRING(buffer, len, i) snprintf(buffer, len, "%d", i);
 #endif
+
+#define I2S_BUFFER_SIZE 32
 
 // this sucks too.
 #ifndef RREGEXP_SRC_PTR
@@ -256,6 +249,7 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
         }
     case T_ARRAY:
         {
+		    char name[I2S_BUFFER_SIZE];
             int start_position, length_location, items, i, obj_length;
             VALUE* values;
 
@@ -268,12 +262,10 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
             items = RARRAY_LEN(value);
             values = RARRAY_PTR(value);
             for(i = 0; i < items; i++) {
-                char* name;
                 VALUE key;
-                INT2STRING(&name, i);
+                INT2STRING(name,I2S_BUFFER_SIZE,i);
                 key = rb_str_new2(name);
                 write_element(key, values[i], pack_extra(buffer, check_keys));
-                free(name);
             }
 
             // write null byte and fill in length
