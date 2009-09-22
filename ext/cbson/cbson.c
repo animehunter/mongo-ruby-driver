@@ -277,7 +277,7 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
     case T_STRING:
         {
             if (strcmp(rb_class2name(RBASIC(value)->klass),
-                       "XGen::Mongo::Driver::Code") == 0) {
+                       "Mongo::Code") == 0) {
                 int start_position, length_location, length, total_length;
                 write_name_and_type(buffer, key, 0x0F);
 
@@ -316,7 +316,7 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
         {
             // TODO there has to be a better way to do these checks...
             const char* cls = rb_class2name(RBASIC(value)->klass);
-            if (strcmp(cls, "XGen::Mongo::Driver::Binary") == 0 ||
+            if (strcmp(cls, "Mongo::Binary") == 0 ||
                 strcmp(cls, "ByteBuffer") == 0) {
                 const char subtype = strcmp(cls, "ByteBuffer") ?
                     (const char)FIX2INT(rb_funcall(value, rb_intern("subtype"), 0)) : 2;
@@ -335,7 +335,7 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
                 buffer_write_bytes(buffer, RSTRING_PTR(string_data), length);
                 break;
             }
-            if (strcmp(cls, "XGen::Mongo::Driver::ObjectID") == 0) {
+            if (strcmp(cls, "Mongo::ObjectID") == 0) {
                 VALUE as_array = rb_funcall(value, rb_intern("to_a"), 0);
                 int i;
                 write_name_and_type(buffer, key, 0x07);
@@ -345,7 +345,7 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
                 }
                 break;
             }
-            if (strcmp(cls, "XGen::Mongo::Driver::DBRef") == 0) {
+            if (strcmp(cls, "Mongo::DBRef") == 0) {
                 int start_position, length_location, obj_length;
                 VALUE ns, oid;
                 write_name_and_type(buffer, key, 0x03);
@@ -366,7 +366,7 @@ static int write_element_allow_id(VALUE key, VALUE value, VALUE extra, int allow
                 memcpy(buffer->buffer + length_location, &obj_length, 4);
                 break;
             }
-            if (strcmp(cls, "XGen::Mongo::Driver::Undefined") == 0) {
+            if (strcmp(cls, "Mongo::Undefined") == 0) {
                 write_name_and_type(buffer, key, 0x06);
                 break;
             }
@@ -734,10 +734,7 @@ void Init_cbson() {
     VALUE driver, CBson;
     Time = rb_const_get(rb_cObject, rb_intern("Time"));
 
-    driver = rb_const_get(rb_const_get(rb_const_get(rb_cObject,
-                                                    rb_intern("XGen")),
-                                       rb_intern("Mongo")),
-                          rb_intern("Driver"));
+    driver = rb_const_get(rb_cObject,rb_intern("Mongo"));
     rb_require("mongo/types/binary");
     Binary = rb_const_get(driver, rb_intern("Binary"));
     rb_require("mongo/types/undefined");
